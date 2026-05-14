@@ -1,0 +1,46 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories
+# vendor/
+
+# Go workspace file
+go.work
+
+# Templ generated files
+# These are generated from .templ files and can be regenerated with `templ generate`
+*_templ.go
+
+# Air (hot reload)
+# Default directory for air's temporary build artifacts
+/tmp/
+
+# SQLite
+# Ignore database files and their temporary journal/write-ahead logs
+*.db
+*.db-shm
+*.db-wal
+
+# Project specific binaries
+# Based on AGENTS.md: `go build -o ./bin/yt-dashboard .`
+/bin/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
