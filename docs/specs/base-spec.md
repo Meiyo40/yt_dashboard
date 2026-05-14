@@ -1,150 +1,205 @@
-# YouTube Comment Dashboard — API Specification
+# YouTube Comment Dashboard — API Specification (v2)
 
-A technical specification for building a custom YouTube comment management dashboard using the YouTube Data API v3. Stack-agnostic: covers only API endpoints, OAuth flow, data models, and behavioral contracts.
+A technical specification for tracking replies to your own comments posted on other channels,
+and responding to those replies from a custom dashboard, using the YouTube Data API v3.
 
 ---
 
-## Overview
+## Overview & Core Problem
 
-This dashboard provides a single interface to:
+The goal is to:
 
-1. **Notifications feed** — see all latest comments and replies received across all your videos
-2. **Reply composer** — respond to any comment directly from the dashboard
-3. **Video thread viewer** — (optional) open the full comment thread of a given video
+1. **See replies** to comments you posted on other people's videos
+2. **Reply back** to those replies from the dashboard
+3. **Optionally** open the full comment thread of the video when inspecting a reply
 
-All API calls are authenticated with OAuth 2.0 and require the channel owner's credentials.
+### Critical API Limitation
+
+The YouTube Data API v3 has **no endpoint to list all comments posted by a given user**,
+even with the user's own OAuth token. There is no `commentThreads.list?authorId=me` filter.
+
+This means there is no direct "fetch my comments on other channels" query. The only viable
+approaches are:
+
+- **Approach A (recommended):** Persist your own comment IDs client-side, then poll for
+  replies using `comments.list?parentId={your_comment_id}`.
+- **Approach B (bootstrap):** Use `commentThreads.list?allThreadsRelatedToChannelId=` on
+  each channel you know you've commented on — expensive and impractical at scale.
+- **Approach C (unofficial, fragile):** Scrape `myactivity.google.com/page?page=youtube_comments`
+  — not part of any official API, may break without notice. Not recommended for production.
+
+This spec uses **Approach A** as the primary strategy.
 
 ---
 
 ## Authentication
 
-### OAuth 2.0 Flow
+### OAuth 2.0 Scopes
 
-The dashboard requires OAuth 2.0 authorization. Read-only operations (listing comments) use the read scope; write operations (posting replies) require the broader scope.
-
-| Scope                                               | Used for                            |
-| --------------------------------------------------- | ----------------------------------- |
-| `https://www.googleapis.com/auth/youtube.readonly`  | Reading comments and channel data   |
+| Scope | Used for |
+|-------|----------|
+| `https://www.googleapis.com/auth/youtube.readonly` | Reading comment threads and replies |
 | `https://www.googleapis.com/auth/youtube.force-ssl` | Posting replies (`comments.insert`) |
 
-**Flow type:** Authorization Code (for server-side apps) or PKCE Authorization Code (for SPAs / native apps).
+**Flow type:** Authorization Code + PKCE (for SPAs) or Authorization Code (for server-side apps).
 
-**Token storage:** Access tokens expire after 1 hour. Store and refresh using the `refresh_token` returned during initial authorization. Never store tokens in `localStorage` on the web — use secure cookies (server-side) or in-memory (client-side SPA).
+**Token handling:**
 
-**Required Google Cloud setup:**
+- Access tokens expire after 1 hour — store and use the `refresh_token` for silent renewal.
+- Never store tokens in `localStorage` (sandboxed iframes block it). Use secure cookies
+  (server-side) or in-memory variables (client-side SPA).
 
-- Create a project in [Google Cloud Console](https://console.cloud.google.com)
-- Enable the **YouTube Data API v3**
-- Create OAuth 2.0 credentials (type: Web Application or Desktop App)
-- Add your redirect URI to the allowed list
+**Google Cloud Console setup:**
+
+1. Create a project and enable the **YouTube Data API v3**
+2. Create OAuth 2.0 credentials (type: Web Application or Desktop App)
+3. Add your redirect URI to the authorized redirect list
 
 ---
 
 ## Quota Budget
 
-Every API call consumes quota units from a default daily allowance of **10,000 units** per project.
+Default daily allowance: **10,000 units** per Google Cloud project.
 
-| Operation                    | Method                  | Quota cost     |
-| ---------------------------- | ----------------------- | -------------- |
-| List comment threads         | `commentThreads.list`   | 1 unit/request |
-| List replies                 | `comments.list`         | 1 unit/request |
-| Post a reply                 | `comments.insert`       | 50 units       |
-| Post a new top-level comment | `commentThreads.insert` | 50 units       |
-| Update a comment             | `comments.update`       | 50 units       |
-| Delete a comment             | `comments.delete`       | 50 units       |
+| Operation | Method | Quota cost |
+|-----------|--------|-----------|
+| List replies for a comment | `comments.list` | 1 unit/request |
+| Post a reply | `comments.insert` | 50 units |
+| List threads for a video | `commentThreads.list` | 1 unit/request |
 
-**Practical limits at 10,000 units/day:**
+**Practical budget at 10,000 units/day:**
 
-- ~10,000 listing requests (read-heavy usage is essentially free)
-- ~200 replies posted per day before hitting the cap
-
-To increase the daily quota, submit a [quota extension request](https://support.google.com/youtube/contact/yt_api_form) to Google. Approval requires a compliance audit.
+- ~10,000 reply-listing requests (very cheap)
+- ~200 replies posted before hitting the cap
 
 ---
 
-## Feature 1: Notifications Feed
+## Core Architecture: Comment ID Registry
 
-Fetches all recent comments and replies received on the authenticated channel.
+Since the API cannot enumerate your comments, the dashboard must maintain a local
+**Comment ID Registry** — a persisted list of comment IDs for comments you have posted.
 
-### 1.1 Fetch All Comment Threads for the Channel
+```ts
+type OwnComment = {
+  commentId: string;       // The comment resource ID returned by comments.insert
+  videoId: string;         // The video the comment was posted on
+  videoTitle?: string;     // Optional: store for display purposes
+  channelTitle?: string;   // Optional: store for display purposes
+  textOriginal: string;    // Your comment text
+  postedAt: string;        // ISO 8601 timestamp
+  lastCheckedAt?: string;  // When replies were last fetched
+  replyCount: number;      // Last known reply count
+};
+```
 
-Retrieve every comment thread associated with the channel (both channel-level comments and all video comments).
+**Populating the registry:**
 
-**Endpoint:** `GET https://www.googleapis.com/youtube/v3/commentThreads`
+- When you post a new comment from the dashboard, store the returned `comment.id` immediately.
+- Optionally allow manual import: paste a YouTube comment URL and extract the comment ID
+  from the `lc=` query parameter (e.g. `?lc=UgxABC123`).
+
+---
+
+## Feature 1: Notifications Feed — Replies to Your Comments
+
+Polls for new replies to each of your tracked comments.
+
+### 1.1 Fetch Replies for a Specific Comment
+
+**Endpoint:** `GET https://www.googleapis.com/youtube/v3/comments`
 
 **Parameters:**
 
-| Parameter                      | Value               | Notes                                              |
-| ------------------------------ | ------------------- | -------------------------------------------------- |
-| `part`                         | `snippet,replies`   | Returns top-level comment + up to 5 inline replies |
-| `allThreadsRelatedToChannelId` | `{your_channel_id}` | Fetches threads across all videos of the channel   |
-| `order`                        | `time`              | Sort by newest first (`time` or `relevance`)       |
-| `maxResults`                   | `20` to `100`       | Items per page (max 100)                           |
-| `pageToken`                    | `{nextPageToken}`   | Pagination cursor from previous response           |
-| `moderationStatus`             | `published`         | Only show published comments (omit for all)        |
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| `part` | `snippet` | Returns author, text, timestamps |
+| `parentId` | `{your_comment_id}` | The ID of *your* top-level comment |
+| `maxResults` | Up to `100` | Items per page |
+| `pageToken` | `{nextPageToken}` | Pagination cursor |
+| `textFormat` | `plainText` or `html` | Format of `textDisplay` field |
 
-**Authorization:** Required (read scope sufficient).
+**Authorization:** Read scope sufficient.
 
 **Sample request:**
 
 ```
-GET https://www.googleapis.com/youtube/v3/commentThreads
-  ?part=snippet,replies
-  &allThreadsRelatedToChannelId=UC_XXXXXXXXXXXXXXXXXXXX
-  &order=time
-  &maxResults=50
+GET https://www.googleapis.com/youtube/v3/comments
+  ?part=snippet
+  &parentId=UgxABC123XYZ
+  &maxResults=100
+  &textFormat=plainText
 Authorization: Bearer {access_token}
 ```
 
-**Response object — `commentThread` resource:**
+**Response — `comment` resource:**
 
 ```json
 {
-  "kind": "youtube#commentThread",
+  "kind": "youtube#comment",
   "id": "string",
   "snippet": {
-    "channelId": "string",
-    "videoId": "string",
-    "topLevelComment": { "...comment resource..." },
-    "canReply": true,
-    "totalReplyCount": 3,
-    "isPublic": true
-  },
-  "replies": {
-    "comments": [ "...up to 5 comment resources..." ]
+    "parentId": "string",
+    "textDisplay": "string",
+    "textOriginal": "string",
+    "authorDisplayName": "string",
+    "authorProfileImageUrl": "string",
+    "authorChannelId": { "value": "string" },
+    "likeCount": 0,
+    "publishedAt": "2026-05-14T19:00:00.000Z",
+    "updatedAt": "2026-05-14T19:00:00.000Z"
   }
 }
 ```
 
-**Key fields to extract for the notification card:**
+**Key fields for the notification card:**
 
-| Field path                                          | Usage                                        |
-| --------------------------------------------------- | -------------------------------------------- |
-| `id`                                                | Thread ID (used as `parentId` when replying) |
-| `snippet.videoId`                                   | Link back to the video                       |
-| `snippet.topLevelComment.snippet.authorDisplayName` | Comment author                               |
-| `snippet.topLevelComment.snippet.textDisplay`       | Comment text                                 |
-| `snippet.topLevelComment.snippet.publishedAt`       | Publication timestamp (ISO 8601)             |
-| `snippet.topLevelComment.snippet.likeCount`         | Like count                                   |
-| `snippet.totalReplyCount`                           | Number of replies                            |
-| `replies.comments[]`                                | Inline replies (partial — up to 5)           |
+| Field path | Usage |
+|-----------|-------|
+| `id` | Reply ID (used as `parentId` if you reply to a reply — note: YouTube flattens replies, all replies go to the same thread) |
+| `snippet.parentId` | ID of your original comment |
+| `snippet.authorDisplayName` | Who replied |
+| `snippet.authorProfileImageUrl` | Their avatar |
+| `snippet.textDisplay` | Reply text |
+| `snippet.publishedAt` | When it was posted |
 
-### 1.2 Polling for New Comments
+### 1.2 Polling Strategy
 
-The YouTube Data API v3 does **not** provide webhooks or push notifications for new comments. You must poll at regular intervals.
+Since the API provides no push notifications, implement client-side polling.
 
-**Recommended polling strategy:**
+**Algorithm:**
 
-- On first load: fetch the last N threads sorted by `time`.
-- On subsequent polls: store the `publishedAt` timestamp of the most recent comment seen. After each poll, only display threads newer than the stored timestamp as "new."
-- **Polling interval:** Minimum 60 seconds recommended. Do not hammer the API to avoid quota exhaustion.
-- Alternatively, use `publishedBefore` / `publishedAfter` parameters (not natively supported on `commentThreads.list`) — instead, filter client-side by `snippet.topLevelComment.snippet.publishedAt`.
+```
+On startup:
+  For each OwnComment in registry:
+    Fetch comments.list?parentId={commentId}
+    Store replies locally indexed by reply.id
+    Mark replies newer than lastCheckedAt as "unseen"
+    Update OwnComment.lastCheckedAt = now()
+    Update OwnComment.replyCount = total replies received
+
+On interval (every 60–120 seconds):
+  For each OwnComment in registry (prioritize recently active ones):
+    Fetch new replies page
+    Diff against stored replies (compare by id)
+    New entries → push to notification feed as unseen
+    Update registry
+```
+
+**Optimization:** To avoid polling all tracked comments equally, sort the registry by
+`lastSeenReplyAt` descending — comments with recent activity are more likely to get
+new replies soon. Only poll the top N (e.g. top 20) on each tick.
 
 ---
 
 ## Feature 2: Reply Composer
 
-Allows the channel owner to post a reply to any top-level comment thread.
+Post a reply from the dashboard directly to a reply in your thread.
+
+### Important: YouTube reply threading is flat
+
+YouTube does not support nested replies. When someone replies to your comment,
+their reply's `parentId` is your original comment's `id` — not the reply's own `id`.
+When you reply back, you always reply to the **original top-level comment thread**.
 
 ### 2.1 Post a Reply
 
@@ -152,53 +207,51 @@ Allows the channel owner to post a reply to any top-level comment thread.
 
 **Query parameter:**
 
-| Parameter | Value     |
-| --------- | --------- |
-| `part`    | `snippet` |
+| Parameter | Value |
+|-----------|-------|
+| `part` | `snippet` |
 
-**Authorization:** Required — must use `youtube.force-ssl` scope.
+**Authorization:** `youtube.force-ssl` scope required.
 
 **Request body:**
 
 ```json
 {
   "snippet": {
-    "parentId": "{commentThread.id}",
-    "textOriginal": "Your reply text here."
+    "parentId": "{your_original_comment_id}",
+    "textOriginal": "Thanks for your reply! ..."
   }
 }
 ```
 
-**Key fields:**
+> **Note:** `parentId` is always the **top-level comment ID** (your original comment),
+> never the ID of the individual reply you're responding to. To address someone
+> specifically, mention their name in the text (e.g. `@Username`).
 
-| Field                  | Description                                                 |
-| ---------------------- | ----------------------------------------------------------- |
-| `snippet.parentId`     | The `id` of the `commentThread` resource being replied to   |
-| `snippet.textOriginal` | Plain-text content of the reply (supports some HTML subset) |
+**Response:** Returns the created `comment` resource with its assigned `id` and full `snippet`.
 
-**Response:** Returns the created `comment` resource with its assigned `id` and `snippet`.
+**After success:**
+
+- Append the returned comment to the local replies list immediately (no re-fetch needed).
+- Update `OwnComment.replyCount` in the registry.
+- Quota: deduct 50 units from daily counter.
 
 **Error cases to handle:**
 
-| HTTP status               | Error reason                | Handling                                             |
-| ------------------------- | --------------------------- | ---------------------------------------------------- |
-| `403 forbidden`           | `canReply: false` on thread | Disable reply button if `snippet.canReply === false` |
-| `403 forbidden`           | `commentsDisabled`          | Comments turned off for the video                    |
-| `400 badRequest`          | Empty or invalid text       | Validate non-empty input before sending              |
-| `429 / 403 quotaExceeded` | Daily quota hit             | Show quota warning; block further writes             |
-
-### 2.2 UI Contract for the Reply Composer
-
-- Check `snippet.canReply` from the `commentThread` resource before rendering the reply button.
-- Show a character count (YouTube allows up to ~10,000 characters per comment).
-- After a successful `comments.insert`, append the returned `comment` resource to the local replies list without re-fetching.
-- Quota: each reply costs **50 units** — display a running counter if quota management is desired.
+| HTTP status | Error reason | Handling |
+|------------|-------------|---------|
+| `403 forbidden` | `commentsDisabled` | Show warning: "Replies are disabled on this video" |
+| `403 forbidden` | `videoNotFound` or deleted | Show warning: "The video no longer exists" |
+| `400 badRequest` | Empty or too-long text | Validate before sending (max ~10,000 chars) |
+| `403 quotaExceeded` | Daily quota hit | Block writes; show quota warning |
+| `401 unauthorized` | Token expired | Trigger silent token refresh, then retry |
 
 ---
 
 ## Feature 3: Full Video Thread Viewer (Optional)
 
-Opens the complete list of comment threads for a specific video, with full reply chains.
+When inspecting a reply notification, optionally display the full thread context
+of the video — all top-level comments on that video.
 
 ### 3.1 Fetch Comment Threads for a Video
 
@@ -206,85 +259,72 @@ Opens the complete list of comment threads for a specific video, with full reply
 
 **Parameters:**
 
-| Parameter    | Value                 | Notes                             |
-| ------------ | --------------------- | --------------------------------- |
-| `part`       | `snippet,replies`     | Include inline replies            |
-| `videoId`    | `{video_id}`          | The video whose comments to fetch |
-| `order`      | `time` or `relevance` | Sort order                        |
-| `maxResults` | Up to `100`           | Items per page                    |
-| `pageToken`  | `{nextPageToken}`     | Cursor for pagination             |
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| `part` | `snippet,replies` | Top-level comment + up to 5 inline replies |
+| `videoId` | `{video_id}` | From your `OwnComment.videoId` |
+| `order` | `time` or `relevance` | |
+| `maxResults` | Up to `100` | Items per page |
+| `pageToken` | `{nextPageToken}` | Pagination cursor |
 
-**Sample request:**
+**Note:** `snippet.replies` returns at most 5 replies. To show the full reply chain
+for your own comment specifically, call `comments.list?parentId={your_comment_id}` as
+described in Feature 1 — this is more efficient than loading all threads.
+
+### 3.2 Highlight Your Own Comment
+
+When rendering video threads, highlight the `commentThread` whose
+`snippet.topLevelComment.snippet.authorChannelId.value` matches your channel ID.
+Your channel ID is obtainable via:
 
 ```
-GET https://www.googleapis.com/youtube/v3/commentThreads
-  ?part=snippet,replies
-  &videoId=dQw4w9WgXcQ
-  &order=time
-  &maxResults=100
+GET https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true
 Authorization: Bearer {access_token}
 ```
 
-### 3.2 Fetch All Replies for a Thread
-
-When a thread has more replies than the inline `replies.comments[]` array (i.e., `totalReplyCount > replies.comments.length`), fetch the full reply chain separately.
-
-**Endpoint:** `GET https://www.googleapis.com/youtube/v3/comments`
-
-**Parameters:**
-
-| Parameter    | Value                | Notes                             |
-| ------------ | -------------------- | --------------------------------- |
-| `part`       | `snippet`            |                                   |
-| `parentId`   | `{commentThread.id}` | The thread whose replies to fetch |
-| `maxResults` | Up to `100`          |                                   |
-| `pageToken`  | `{nextPageToken}`    | For pagination                    |
-
-**Sample request:**
-
-```
-GET https://www.googleapis.com/youtube/v3/comments
-  ?part=snippet
-  &parentId=THREAD_ID
-  &maxResults=100
-Authorization: Bearer {access_token}
-```
+Response field: `items[0].id` → your channel ID.
 
 ---
 
 ## Data Model (Client-Side)
 
-Suggested normalized client-side model to power the dashboard UI.
-
-### `CommentThread`
+### `OwnComment` (Comment ID Registry entry)
 
 ```ts
-type CommentThread = {
-  id: string; // YouTube thread ID (used as parentId for replies)
+type OwnComment = {
+  commentId: string;
   videoId: string;
-  topLevelComment: Comment;
-  totalReplyCount: number;
-  canReply: boolean;
-  isPublic: boolean;
-  replies: Comment[]; // Partial (up to 5) from commentThreads.list
-  repliesFullyLoaded: boolean; // True once comments.list has been called
+  videoTitle?: string;
+  channelTitle?: string;
+  textOriginal: string;
+  postedAt: string;             // ISO 8601
+  lastCheckedAt?: string;       // ISO 8601
+  replyCount: number;
 };
 ```
 
-### `Comment`
+### `Reply`
 
 ```ts
-type Comment = {
+type Reply = {
   id: string;
-  parentId?: string; // Only set for replies
+  parentId: string;             // Always your OwnComment.commentId
   authorDisplayName: string;
   authorProfileImageUrl: string;
   authorChannelId: string;
-  textDisplay: string; // HTML-formatted text
-  textOriginal: string; // Plain text (for editing)
-  likeCount: number;
-  publishedAt: string; // ISO 8601
-  updatedAt: string; // ISO 8601
+  textDisplay: string;
+  publishedAt: string;          // ISO 8601
+  seen: boolean;                // Local flag — not from API
+};
+```
+
+### `NotificationItem`
+
+```ts
+type NotificationItem = {
+  reply: Reply;
+  ownComment: OwnComment;       // The comment being replied to
+  seen: boolean;
 };
 ```
 
@@ -292,38 +332,44 @@ type Comment = {
 
 ## API Endpoint Reference Summary
 
-| Feature                   | Method                  | Endpoint                                                   | Auth scope | Quota cost |
-| ------------------------- | ----------------------- | ---------------------------------------------------------- | ---------- | ---------- |
-| List all channel threads  | `commentThreads.list`   | `/youtube/v3/commentThreads?allThreadsRelatedToChannelId=` | readonly   | 1          |
-| List video threads        | `commentThreads.list`   | `/youtube/v3/commentThreads?videoId=`                      | readonly   | 1          |
-| List replies for a thread | `comments.list`         | `/youtube/v3/comments?parentId=`                           | readonly   | 1          |
-| Post a reply              | `comments.insert`       | `POST /youtube/v3/comments`                                | force-ssl  | 50         |
-| Post a top-level comment  | `commentThreads.insert` | `POST /youtube/v3/commentThreads`                          | force-ssl  | 50         |
-| Update a comment          | `comments.update`       | `PUT /youtube/v3/comments`                                 | force-ssl  | 50         |
-| Delete a comment          | `comments.delete`       | `DELETE /youtube/v3/comments`                              | force-ssl  | 50         |
+| Feature | Method | Endpoint | Auth scope | Quota cost |
+|---------|--------|----------|-----------|-----------|
+| Fetch replies to your comment | `comments.list` | `/youtube/v3/comments?parentId=` | readonly | 1 |
+| Post a reply | `comments.insert` | `POST /youtube/v3/comments` | force-ssl | 50 |
+| Get your channel ID | `channels.list` | `/youtube/v3/channels?mine=true` | readonly | 1 |
+| List all threads on a video | `commentThreads.list` | `/youtube/v3/commentThreads?videoId=` | readonly | 1 |
 
 ---
 
 ## Edge Cases & Constraints
 
-- **`replies` in `commentThreads.list` is partial.** It contains at most 5 replies. Always check `totalReplyCount > replies.comments.length` and lazy-load the full chain via `comments.list` when the user expands a thread.
-- **`allThreadsRelatedToChannelId` vs `channelId`.** Use `allThreadsRelatedToChannelId` for the notifications feed — it returns threads from all videos. `channelId` returns only channel-level comments (not video comments).
-- **Pagination is mandatory.** All `list` methods are paginated. Iterate `nextPageToken` to retrieve all results. There is no `offset` — always use the cursor.
-- **`order=time` is not guaranteed to be strict.** YouTube may return some out-of-order results near the page boundary. Sort client-side by `publishedAt` as a secondary safety measure.
-- **Comments from private or deleted videos** may return `403` or be absent from `allThreadsRelatedToChannelId` results. Handle gracefully.
-- **Rate limit vs quota limit.** Beyond the daily 10,000-unit quota, YouTube may also rate-limit burst requests. Implement exponential backoff on `429` and `503` responses.
-- **No server-push / webhooks.** Polling is the only option. For near-real-time notifications, consider a background job that polls every 60 seconds and marks delta comments as "unseen."
+- **No API to list your own comments.** The registry is mandatory. Without it, you cannot
+  know which comment IDs to poll. There is no `commentThreads.list?author=me` filter.
+- **Flat reply threading.** All replies in a thread share the same `parentId` (the top-level
+  comment). There is no concept of "reply to a reply" — `parentId` must always point to
+  the top-level comment, never to another reply.
+- **Deleted or private videos.** A `comments.list` call on a `parentId` whose video was
+  deleted will return `403` or an empty response. Remove that entry from the registry or
+  mark it as `archived`.
+- **Comment deletion by video owner.** A third party can delete your comment from their video.
+  A `comments.list?parentId={deleted_id}` will return `404`. Handle gracefully and mark as
+  deleted in registry.
+- **Pagination is required.** All `list` responses may include a `nextPageToken`. Always
+  iterate until exhausted if you want all replies.
+- **Rate limiting.** Beyond daily quota, YouTube may return `429` or `503` on burst requests.
+  Implement exponential backoff with jitter.
+- **`replies` in `commentThreads.list` is partial.** Max 5 replies inline. Use
+  `comments.list?parentId=` for the full chain.
 
 ---
 
-## Relevant Documentation Links
+## Relevant Documentation
 
 - [YouTube Data API v3 Overview](https://developers.google.com/youtube/v3/getting-started)
-- [commentThreads Resource](https://developers.google.com/youtube/v3/docs/commentThreads)
-- [commentThreads.list](https://developers.google.com/youtube/v3/docs/commentThreads/list)
-- [comments Resource](https://developers.google.com/youtube/v3/docs/comments)
 - [comments.list](https://developers.google.com/youtube/v3/docs/comments/list)
 - [comments.insert](https://developers.google.com/youtube/v3/docs/comments/insert)
+- [commentThreads.list](https://developers.google.com/youtube/v3/docs/commentThreads/list)
+- [channels.list](https://developers.google.com/youtube/v3/docs/channels/list)
 - [Implementation: Comments](https://developers.google.com/youtube/v3/guides/implementation/comments)
 - [Quota Calculator](https://developers.google.com/youtube/v3/determine_quota_cost)
-- [OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server)
+- [OAuth 2.0 PKCE Flow](https://developers.google.com/identity/protocols/oauth2/native-app)
