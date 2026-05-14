@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tracked Comments - CommHub Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#181c24",
+                        "tertiary": "#acc7ff",
+                        "surface-tint": "#ffb4a8",
+                        "on-surface": "#e5e2e1",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary": "#690100",
+                        "primary-fixed-dim": "#ffb4a8",
+                        "surface": "#131313",
+                        "tertiary-container": "#488fff",
+                        "secondary": "#c3c6d2",
+                        "on-error": "#690005",
+                        "background": "#131313",
+                        "inverse-primary": "#c00100",
+                        "on-tertiary-fixed": "#001a40",
+                        "surface-bright": "#393939",
+                        "surface-dim": "#131313",
+                        "primary-fixed": "#ffdad4",
+                        "on-secondary": "#2c3039",
+                        "tertiary-fixed-dim": "#acc7ff",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-secondary-fixed-variant": "#434750",
+                        "on-primary-fixed-variant": "#930100",
+                        "on-primary-fixed": "#410000",
+                        "surface-container-high": "#2a2a2a",
+                        "on-secondary-container": "#b5b8c4",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "outline": "#b18780",
+                        "outline-variant": "#603e39",
+                        "surface-variant": "#353534",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353534",
+                        "inverse-on-surface": "#313030",
+                        "secondary-fixed-dim": "#c3c6d2",
+                        "on-tertiary-container": "#00285b",
+                        "on-surface-variant": "#ebbbb4",
+                        "primary-container": "#ff5540",
+                        "primary": "#ffb4a8",
+                        "secondary-container": "#454953",
+                        "on-tertiary": "#002f67",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-container": "#5c0000",
+                        "surface-container": "#201f1f",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-fixed-variant": "#004491",
+                        "on-background": "#e5e2e1",
+                        "secondary-fixed": "#dfe2ee"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-spacing": "0.75rem",
+                        "unit": "4px",
+                        "component-gap": "0.25rem",
+                        "gutter": "0.5rem",
+                        "container-padding": "1rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "label-sm": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "label-xs": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "display": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-xs": ["10px", {"lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styling overrides for high-density app feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #353534; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #454953; }
+        
+        /* Table specifics for density */
+        th, td { padding: 0.375rem 0.75rem; border-bottom: 1px solid #2a2a2a; }
+        th { border-bottom: 1px solid #603e39; }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen flex overflow-hidden font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- JSON Component: SideNavBar -->
+<nav class="h-screen w-64 flex-shrink-0 bg-surface dark:bg-surface border-r border-outline-variant dark:border-outline-variant flex flex-col p-stack-spacing">
+<!-- Header -->
+<div class="flex items-center gap-gutter px-gutter py-stack-spacing mb-4">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined font-display" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<h1 class="font-display text-display font-bold text-primary dark:text-primary text-base">CommHub Pro</h1>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Power User Console</p>
+</div>
+</div>
+<!-- Main Navigation -->
+<div class="flex-1 space-y-component-gap">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-gutter px-gutter py-2 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Notifications (Inactive) -->
+<a class="flex items-center gap-gutter px-gutter py-2 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-primary transition-colors">notifications</span>
+<span class="font-body-md text-body-md flex-1">Notifications</span>
+<span class="bg-error-container text-on-error-container font-label-xs text-label-xs px-1.5 py-0.5 rounded-DEFAULT">12</span>
+</a>
+<!-- Tracked Comments (Active - Match from JSON) -->
+<a class="flex items-center gap-gutter px-gutter py-2 bg-secondary-container text-on-secondary-container font-bold rounded-lg opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">visibility</span>
+<span class="font-body-md text-body-md">Tracked Comments</span>
+</a>
+<!-- Moderation (Inactive) -->
+<a class="flex items-center gap-gutter px-gutter py-2 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-primary transition-colors">gavel</span>
+<span class="font-body-md text-body-md">Moderation</span>
+</a>
+<!-- Analytics (Inactive) -->
+<a class="flex items-center gap-gutter px-gutter py-2 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:text-primary transition-colors">analytics</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+</div>
+<!-- Footer / Workspace Actions -->
+<div class="mt-auto border-t border-outline-variant pt-stack-spacing space-y-component-gap">
+<button class="w-full py-1.5 mb-2 bg-surface-container-highest hover:bg-surface-variant text-primary border border-outline-variant rounded-lg font-label-sm text-label-sm transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+                Upgrade Quota
+            </button>
+<a class="flex items-center gap-gutter px-gutter py-1.5 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[16px]">pending_actions</span>
+<span class="font-label-sm text-label-sm">Quota Status</span>
+</a>
+<a class="flex items-center gap-gutter px-gutter py-1.5 text-on-surface-variant hover:bg-surface-variant hover:text-on-surface rounded-lg transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col bg-background relative min-w-0">
+<!-- Top Action Header -->
+<header class="flex-shrink-0 h-14 border-b border-outline-variant bg-surface flex items-center justify-between px-container-padding sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Tracked Registry</h2>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+                    Live Sync Active
+                </span>
+</div>
+<div class="flex items-center gap-stack-spacing">
+<!-- Search/Filter Input (Developer minimal style) -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">search</span>
+<input class="w-full bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm rounded-DEFAULT py-1 pl-8 pr-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant" placeholder="Filter ID or keyword..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary hover:bg-primary-fixed-dim px-3 py-1.5 rounded-DEFAULT font-label-sm text-label-sm font-bold flex items-center gap-1.5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px] font-bold">add</span>
+                    Add manually
+                </button>
+</div>
+</header>
+<!-- Data Grid View -->
+<div class="flex-1 overflow-auto p-4">
+<div class="border border-outline-variant rounded-lg bg-surface-container overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider sticky top-0 z-0 shadow-sm">
+<tr>
+<th class="w-10 text-center"><span class="material-symbols-outlined text-[16px]">check_box_outline_blank</span></th>
+<th class="w-1/4 min-w-[200px]">Target Asset</th>
+<th class="w-2/5 min-w-[300px]">Tracked Payload</th>
+<th class="w-32">Timestamp</th>
+<th class="w-24 text-center">Metrics</th>
+<th class="w-16 text-right pr-4">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-outline-variant text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-variant transition-colors group">
+<td class="text-center align-middle text-on-surface-variant"><span class="material-symbols-outlined text-[16px] group-hover:text-primary cursor-pointer">check_box_outline_blank</span></td>
+<td class="align-middle">
+<div class="flex items-center gap-3">
+<div class="w-10 h-7 bg-surface-container-highest rounded border border-outline-variant overflow-hidden flex-shrink-0 relative">
+<img alt="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A macro shot of a sleek, modern smartphone displaying a colorful abstract gradient on its screen. The device rests on a dark, textured slate surface. Low-key dramatic lighting highlights the metallic edges of the phone, reflecting a cool blue and purple hue. The overall aesthetic is highly technical, dark mode, and pristine." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD337Xo8NeKfN-QmTr6xcwwTB4vp7Fj7GboJ6Lc4i24infI1OZZxwW-brkuypDE8Q9XtjR416OxrxxuuZ7Fht3VwoQ0I8z0usthTBhKY7OEyKBhkTBlUKhP6eruUFLewGiIkHr1jSMMsoCsedllCr3dx5NdcUJCFL1mqNP7trhPPmVHHkInoR2RGLwZMRhK1uXoCtZkC5_ZXfPUoQYtVAqnv7M8R9fQ6sd53KQ3C5nPgYadvGrqjsivKfImPvS6i09OwPWLfW9UnjY"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-body-md text-body-md font-medium truncate">Next-Gen Tech Setup Guide 2024</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant truncate">TechFlow Media</span>
+</div>
+</div>
+</td>
+<td class="align-middle">
+<div class="flex flex-col">
+<span class="text-on-surface truncate pr-4" title="Really appreciate the breakdown on the GPU thermals. Exactly what I needed before upgrading.">"Really appreciate the breakdown on the GPU thermals. Exactly what I needed before upg..."</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">ID: c_x789b12a</span>
+</div>
+</td>
+<td class="align-middle font-label-sm text-label-sm text-on-surface-variant">2h ago</td>
+<td class="align-middle text-center">
+<span class="inline-flex items-center gap-1 bg-surface-container-highest border border-outline-variant px-1.5 py-0.5 rounded font-label-xs text-label-xs text-secondary">
+<span class="material-symbols-outlined text-[12px]">forum</span>
+                                    14
+                                </span>
+</td>
+<td class="align-middle text-right pr-4">
+<button class="text-on-surface-variant hover:text-error transition-colors p-1 rounded hover:bg-surface-container-high" title="Remove tracking">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-variant transition-colors group">
+<td class="text-center align-middle text-on-surface-variant"><span class="material-symbols-outlined text-[16px] group-hover:text-primary cursor-pointer">check_box_outline_blank</span></td>
+<td class="align-middle">
+<div class="flex items-center gap-3">
+<div class="w-10 h-7 bg-surface-container-highest rounded border border-outline-variant overflow-hidden flex-shrink-0 relative">
+<img alt="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A high-angle view of a neat, minimalist developer workspace. A dark grey mechanical keyboard sits next to a sleek mouse on a matte black desk mat. The screen displays lines of code in a dark IDE environment. Warm, subtle ambient lighting contrasts with the cool glow of the monitor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8r8ap7QpoXZk2x--o-G4BDDSCzvzdJ0kTlotuL67gruleneQBIwYdz6a5FE63Mc0EUwFJORvKHVnKoaNeQygyVVuy1zPT8_4KlXBxdAj86jnnqGKWIGOsGRmGPJz9XmJZCmyGpu_VeWRANTHx04_5ObEokiePPvxkIX0ob15ZFmGGZmo6uxNUcxq3CB6WYlQaMA1S3AZO1a-sNmjOrll2EIC9X7eDRl72Gk_l8ypLHzozAJDll4FWYL_7FyIShimZALkbgiqcWHw"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-body-md text-body-md font-medium truncate">React vs Vue: Production Realities</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant truncate">CodeArchitect</span>
+</div>
+</div>
+</td>
+<td class="align-middle">
+<div class="flex flex-col">
+<span class="text-on-surface truncate pr-4" title="Can you elaborate on the bundle size optimizations you mentioned around 14:20?">"Can you elaborate on the bundle size optimizations you mentioned around 14:20?"</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">ID: c_v441m90z</span>
+</div>
+</td>
+<td class="align-middle font-label-sm text-label-sm text-on-surface-variant">5h ago</td>
+<td class="align-middle text-center">
+<span class="inline-flex items-center gap-1 bg-tertiary-container/20 border border-tertiary/30 px-1.5 py-0.5 rounded font-label-xs text-label-xs text-tertiary">
+<span class="material-symbols-outlined text-[12px]">forum</span>
+                                    3
+                                </span>
+</td>
+<td class="align-middle text-right pr-4">
+<button class="text-on-surface-variant hover:text-error transition-colors p-1 rounded hover:bg-surface-container-high" title="Remove tracking">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 (Status variation) -->
+<tr class="hover:bg-surface-variant transition-colors group bg-surface-container-low">
+<td class="text-center align-middle text-on-surface-variant"><span class="material-symbols-outlined text-[16px] group-hover:text-primary cursor-pointer">check_box_outline_blank</span></td>
+<td class="align-middle">
+<div class="flex items-center gap-3">
+<div class="w-10 h-7 bg-surface-container-highest rounded border border-outline-variant overflow-hidden flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">image_not_supported</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-body-md text-body-md font-medium truncate text-on-surface-variant line-through">Video Unavailable</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant truncate">Unknown Channel</span>
+</div>
+</div>
+</td>
+<td class="align-middle opacity-50">
+<div class="flex flex-col">
+<span class="text-on-surface truncate pr-4">"This track is incredible, dropping a sub."</span>
+<span class="font-label-xs text-label-xs text-error mt-0.5 flex items-center gap-1">
+<span class="w-1 h-1 rounded-full bg-error inline-block"></span> Sync Failed (404)
+                                    </span>
+</div>
+</td>
+<td class="align-middle font-label-sm text-label-sm text-on-surface-variant">Yesterday</td>
+<td class="align-middle text-center">
+<span class="inline-flex items-center gap-1 bg-surface-container-highest border border-outline-variant px-1.5 py-0.5 rounded font-label-xs text-label-xs text-on-surface-variant opacity-50">
+<span class="material-symbols-outlined text-[12px]">forum</span>
+                                    -
+                                </span>
+</td>
+<td class="align-middle text-right pr-4">
+<button class="text-on-surface-variant hover:text-error transition-colors p-1 rounded hover:bg-surface-container-high" title="Remove tracking">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination footer -->
+<div class="border-t border-outline-variant bg-surface-container px-4 py-2 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Showing 1-3 of 142 items</span>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:text-on-surface disabled:opacity-50" disabled=""><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<span class="px-2 font-body-md text-body-md">1</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

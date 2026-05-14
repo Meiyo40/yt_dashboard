@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CommHub Pro - Comment Thread Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#181c24",
+                    "tertiary": "#acc7ff",
+                    "surface-tint": "#ffb4a8",
+                    "on-surface": "#e5e2e1",
+                    "inverse-surface": "#e5e2e1",
+                    "on-primary": "#690100",
+                    "primary-fixed-dim": "#ffb4a8",
+                    "surface": "#131313",
+                    "tertiary-container": "#488fff",
+                    "secondary": "#c3c6d2",
+                    "on-error": "#690005",
+                    "background": "#131313",
+                    "inverse-primary": "#c00100",
+                    "on-tertiary-fixed": "#001a40",
+                    "surface-bright": "#393939",
+                    "surface-dim": "#131313",
+                    "primary-fixed": "#ffdad4",
+                    "on-secondary": "#2c3039",
+                    "tertiary-fixed-dim": "#acc7ff",
+                    "tertiary-fixed": "#d7e2ff",
+                    "on-secondary-fixed-variant": "#434750",
+                    "on-primary-fixed-variant": "#930100",
+                    "on-primary-fixed": "#410000",
+                    "surface-container-high": "#2a2a2a",
+                    "on-secondary-container": "#b5b8c4",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "outline": "#b18780",
+                    "outline-variant": "#603e39",
+                    "surface-variant": "#353534",
+                    "error": "#ffb4ab",
+                    "surface-container-highest": "#353534",
+                    "inverse-on-surface": "#313030",
+                    "secondary-fixed-dim": "#c3c6d2",
+                    "on-tertiary-container": "#00285b",
+                    "on-surface-variant": "#ebbbb4",
+                    "primary-container": "#ff5540",
+                    "primary": "#ffb4a8",
+                    "secondary-container": "#454953",
+                    "on-tertiary": "#002f67",
+                    "surface-container-low": "#1c1b1b",
+                    "on-primary-container": "#5c0000",
+                    "surface-container": "#201f1f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-fixed-variant": "#004491",
+                    "on-background": "#e5e2e1",
+                    "secondary-fixed": "#dfe2ee"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-spacing": "0.75rem",
+                    "unit": "4px",
+                    "component-gap": "0.25rem",
+                    "gutter": "0.5rem",
+                    "container-padding": "1rem"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "display": ["Geist"],
+                    "headline-md": ["Geist"],
+                    "label-sm": ["JetBrains Mono"],
+                    "body-lg": ["Inter"],
+                    "label-xs": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "display": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-md": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "label-xs": ["10px", {"lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .thread-line {
+            position: absolute;
+            left: 1.25rem;
+            top: 2.5rem;
+            bottom: -0.5rem;
+            width: 1px;
+            background-color: theme('colors.outline-variant');
+        }
+        .thread-item:last-child .thread-line {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface border-r border-outline-variant h-screen w-64 flex-shrink-0 flex flex-col p-stack-spacing no-scrollbar overflow-y-auto z-10 hidden md:flex">
+<!-- Header -->
+<div class="flex items-center gap-3 mb-8 px-2 mt-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-lg overflow-hidden border border-outline-variant">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<h1 class="font-display text-display font-bold text-primary leading-tight">CommHub Pro</h1>
+<p class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Power User Console</p>
+</div>
+</div>
+<!-- Main Nav -->
+<div class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container font-bold rounded-lg opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-label-sm text-label-sm">Notifications</span>
+<span class="ml-auto bg-primary text-on-primary px-1.5 py-0.5 rounded-sm font-label-xs text-label-xs">12</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">visibility</span>
+<span class="font-label-sm text-label-sm">Tracked Comments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">gavel</span>
+<span class="font-label-sm text-label-sm">Moderation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">analytics</span>
+<span class="font-label-sm text-label-sm">Analytics</span>
+</a>
+</div>
+<!-- Footer / Utility -->
+<div class="mt-auto pt-4 border-t border-outline-variant flex flex-col gap-1">
+<div class="mb-3 px-3">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">API Quota</span>
+<span class="font-label-xs text-label-xs text-primary">85%</span>
+</div>
+<div class="h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[85%]"></div>
+</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">pending_actions</span>
+<span class="font-label-sm text-label-sm">Quota Status</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-lg group-hover:text-primary transition-colors">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<button class="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 bg-surface-container-high hover:bg-surface-variant border border-outline-variant rounded-DEFAULT text-primary font-label-sm text-label-sm transition-colors">
+<span class="material-symbols-outlined text-sm">upgrade</span>
+                Upgrade Quota
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-full relative">
+<!-- TopAppBar -->
+<header class="bg-surface-container border-b border-outline-variant flex justify-between items-center h-12 w-full px-container-padding z-10 flex-shrink-0">
+<!-- Left: Search/Filter -->
+<div class="flex items-center gap-2">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-dim border border-outline-variant rounded-DEFAULT py-1 pl-8 pr-3 text-label-sm font-label-sm text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-colors" placeholder="Search direct replies, mentions..." type="text"/>
+</div>
+</div>
+<!-- Center: Navigation Links (Desktop) -->
+<div class="hidden md:flex items-center gap-6 h-full">
+<a class="text-primary border-b-2 border-primary font-bold font-label-sm text-label-sm h-full flex items-center pt-[2px] transition-colors" href="#">Direct Replies</a>
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm h-full flex items-center pt-[2px] transition-colors" href="#">Mentions</a>
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm h-full flex items-center pt-[2px] transition-colors" href="#">Spam <span class="ml-1 bg-surface-variant text-on-surface-variant px-1 rounded-sm text-[9px] leading-tight">3</span></a>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-bright p-1.5 rounded-DEFAULT transition-all duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">refresh</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-bright p-1.5 rounded-DEFAULT transition-all duration-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">tune</span>
+</button>
+<button class="bg-primary-container text-on-primary-container hover:bg-primary font-label-sm text-label-sm px-3 py-1.5 rounded-DEFAULT transition-colors flex items-center gap-1.5 ml-2">
+<span class="material-symbols-outlined text-sm">campaign</span>
+                    Broadcast
+                </button>
+<div class="w-px h-4 bg-outline-variant mx-1"></div>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-bright p-1 rounded-full transition-all duration-100">
+<img alt="Avatar" class="w-6 h-6 rounded-full border border-outline-variant" data-alt="A close-up portrait of a professional male user in a sleek, dimly lit environment. High-contrast lighting with cool blue and deep charcoal tones. High-tech, minimalist UI style. Sharp focus on the face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_b8kiEW8lKc6r7QsG6FVY5Js1XkOjd4dILrPSzfNCtw-1GdeXm-MQ0LubyPiNW8O09A75eXv6kUU3f4ROQq_gWZJZH5oCwkNJJS0-r-6CPRdEBSx_toWX7PgPUmx7fbTj5tNxnRcxOyRue1FQ-FppRwoBmvYlcK8e3vwjlY66CIvo-Mh1ChvsJxOasJ97J9pRqSqqCBNjEF4lJDO6MSYZXroOWy-Kqoz5eCZbnjzuirzdJamuE1hC4HYtJ_Z_4BhTCER2zlKGgwc"/>
+</button>
+</div>
+</header>
+<!-- Canvas Area (Dimmed Background + Right Panel) -->
+<main class="flex-1 flex overflow-hidden bg-background relative">
+<!-- Dimmed Background Feed (Simulated) -->
+<div class="absolute inset-0 bg-background/80 z-20 flex p-container-padding gap-gutter pointer-events-none">
+<!-- Vague representation of the feed behind -->
+<div class="w-full max-w-3xl mx-auto flex flex-col gap-unit opacity-30">
+<!-- Fake Comment Rows -->
+<div class="bg-surface-container border border-outline-variant p-3 rounded-DEFAULT h-24"></div>
+<div class="bg-surface-container border border-outline-variant p-3 rounded-DEFAULT h-32"></div>
+<div class="bg-surface-container border border-outline-variant p-3 rounded-DEFAULT h-20"></div>
+<div class="bg-surface-container border border-outline-variant p-3 rounded-DEFAULT h-40"></div>
+</div>
+</div>
+<!-- Right Panel Overlay -->
+<div class="absolute inset-y-0 right-0 w-full max-w-[480px] bg-surface-container-high border-l border-outline-variant z-30 shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-0">
+<!-- Panel Header / Context -->
+<div class="p-container-padding border-b border-outline-variant bg-surface-container shrink-0">
+<div class="flex justify-between items-start mb-3">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-xl">forum</span>
+                            Thread Details
+                        </h2>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-variant transition-colors pointer-events-auto">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Video Context Card -->
+<div class="flex gap-3 bg-surface-dim p-2 rounded-DEFAULT border border-outline-variant items-center">
+<div class="w-24 h-14 bg-surface-variant rounded-sm overflow-hidden flex-shrink-0 relative border border-outline-variant">
+<img alt="Video Thumbnail" class="w-full h-full object-cover opacity-80" data-alt="A wide 16:9 thumbnail image depicting a sleek, modern tech setup with glowing monitors in a dark room. The lighting is cinematic, featuring deep blacks and vibrant neon blue accents. Utilitarian, high-density style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUc-ZQ6bdXIHLmRZHzMySqTPlugTiupBHRezhRPFOLoMYqI6s96BA5OdZYy5BA_hV082kVu9GayIrZGVuuuFbCuZ_yNKRFVk-TCSeFMxrXHkXC8kiauq8egDA2v6rbElB5u60pAwKpIJyacqR2p9PKTZ7Og_13nKyj3Y_M4rD81C2GRh1PosBn-NpI9QIXMFQSSqRQ1u5T0lOsvAJ4BvVMgsAIaOsPIHdc5nwyDtBZnSIhHkjl-PewPeV-LKk_mgBEEx-YWovmo9s"/>
+<span class="absolute bottom-1 right-1 bg-black/80 text-white font-label-xs text-[9px] px-1 rounded-sm tracking-wider">12:45</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<h3 class="font-body-md text-body-md text-on-surface font-medium truncate mb-0.5">Advanced System Architecture Deep Dive</h3>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-xs text-label-xs">
+<span>TechCore Official</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span>142K views</span>
+</div>
+</div>
+<a class="text-on-surface-variant hover:text-primary p-1.5 transition-colors pointer-events-auto flex-shrink-0" href="#">
+<span class="material-symbols-outlined text-lg">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Scrollable Thread Content -->
+<div class="flex-1 overflow-y-auto p-container-padding no-scrollbar flex flex-col gap-6 pointer-events-auto">
+<!-- Original Comment Block -->
+<div class="bg-surface-variant border border-outline-variant rounded-DEFAULT p-3 relative">
+<div class="absolute -top-2 -left-2 bg-tertiary-container text-on-tertiary-container font-label-xs text-label-xs px-1.5 py-0.5 rounded-sm border border-outline-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">push_pin</span>
+                            Your Comment
+                        </div>
+<div class="flex items-start gap-3 mt-1">
+<img alt="Your Avatar" class="w-8 h-8 rounded-full border border-outline-variant flex-shrink-0" data-alt="A close-up portrait of a professional male user in a sleek, dimly lit environment. High-contrast lighting with cool blue and deep charcoal tones. High-tech, minimalist UI style. Sharp focus on the face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuO5pMK9aHAwwITellTlQDsWcqA4aar_U2XTcn9Hnyd3gWjjnDMmMgaNFUbZFfEGp2SSNJzsWeAhS-nKyjgERDzoHTjQy0-tGpRnbnTzwBozakG-2EoKD-VSWlJRBqOX1-sdg3b92exufSYofb4cd6h9AEEzYhYLDRPdyf5FnP2crOiB3urxXFwtwybFBHbOnymAy9Yu4wlcC22E9dU1nJjXx_hJo5WdALr9s5xVVDw-i8Qj57NIuLnWKV8vPo7Nby6hCaaLbcvQE"/>
+<div class="flex-1">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">You</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">2 days ago</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface leading-snug">
+                                    I noticed a potential bottleneck in the caching layer described around 8:30. Have you considered implementing a distributed Redis setup to mitigate the latency spikes during peak load?
+                                </p>
+<div class="flex gap-2 mt-2 items-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 bg-surface-dim px-1.5 py-0.5 rounded-sm border border-outline-variant"><span class="material-symbols-outlined text-[12px]">thumb_up</span> 45</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 bg-surface-dim px-1.5 py-0.5 rounded-sm border border-outline-variant"><span class="material-symbols-outlined text-[12px]">forum</span> 3 Replies</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Replies List -->
+<div class="flex flex-col relative pl-2">
+<!-- Thread Items -->
+<div class="thread-item relative flex gap-3 pb-6">
+<div class="thread-line"></div>
+<div class="relative z-10 flex flex-col items-center">
+<img alt="Responder Avatar" class="w-7 h-7 rounded-full border border-outline-variant bg-surface" data-alt="A tight crop of a female face in a low-light, professional setting. Dark background with subtle utilitarian grey tones. High-density tech interface style, sharp and crisp." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkURJ8HgmbFTjV94JxlmX8RpWWhJuqIAxOGTgl1JlxECxOo3BMKtRgRNUpzspVQJ9sXeTBgjDSkBhm30RoW9N7nENz3fkXqf-bQYph6hKQTe7VLIoN04NKMe9bw7CAKWV8TNa4nETrmp1ldNINfBWc2cjKgM4ImONE3rwA3mpoyeBDMs70dsvXCfeQdr6nlMKeM4GsrMQTd029s7rioEaFaqWnqx2_erflMoieaNDP5pOfnhcsXw7A614Y5eQJDCyUR74qMJO0XSc"/>
+</div>
+<div class="flex-1 bg-surface border border-outline-variant rounded-DEFAULT p-2.5">
+<div class="flex items-baseline justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">TechCore Official</span>
+<span class="bg-surface-variant text-on-surface-variant font-label-xs text-[9px] px-1 rounded-sm border border-outline-variant">Creator</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant">1 day ago</span>
+</div>
+<p class="font-body-md text-body-md text-inverse-surface leading-tight">
+                                    Great observation! We actually covered exactly that in a follow-up architecture document. Redis was considered, but we opted for an in-memory mesh due to strict cost constraints.
+                                </p>
+<div class="flex gap-2 mt-2 opacity-60 hover:opacity-100 transition-opacity">
+<button class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 hover:text-on-surface"><span class="material-symbols-outlined text-[12px]">thumb_up</span> 12</button>
+<button class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 hover:text-on-surface"><span class="material-symbols-outlined text-[12px]">thumb_down</span></button>
+<button class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 hover:text-on-surface ml-2"><span class="material-symbols-outlined text-[12px]">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="thread-item relative flex gap-3 pb-6">
+<div class="thread-line"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-7 h-7 rounded-full border border-outline-variant bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-sm font-bold">
+                                    D
+                                </div>
+</div>
+<div class="flex-1 bg-surface border border-outline-variant rounded-DEFAULT p-2.5">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">DevGuy99</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">5 hours ago</span>
+</div>
+<p class="font-body-md text-body-md text-inverse-surface leading-tight">
+                                    @TechCore Official Out of curiosity, which in-memory mesh did you end up going with? Hazelcast?
+                                </p>
+<div class="flex gap-2 mt-2 opacity-60 hover:opacity-100 transition-opacity">
+<button class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 hover:text-on-surface"><span class="material-symbols-outlined text-[12px]">thumb_up</span> 2</button>
+<button class="font-label-xs text-label-xs text-on-surface-variant flex items-center gap-1 hover:text-on-surface ml-2"><span class="material-symbols-outlined text-[12px]">more_horiz</span></button>
+</div>
+</div>
+</div>
+<div class="thread-item relative flex gap-3">
+<div class="thread-line"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-7 h-7 rounded-full border border-primary-container bg-surface flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-sm">smart_toy</span>
+</div>
+</div>
+<div class="flex-1 bg-surface-container border border-primary-container/30 rounded-DEFAULT p-2.5">
+<div class="flex items-baseline justify-between mb-1">
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-primary-container font-semibold">AutoMod</span>
+<span class="material-symbols-outlined text-[10px] text-primary-container">verified</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Just now</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-xs italic leading-tight">
+                                    [System Note: User @DevGuy99 has a low trust score. Monitor interactions.]
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Composer -->
+<div class="p-container-padding border-t border-outline-variant bg-surface-container shrink-0 pointer-events-auto">
+<!-- Warning Banner -->
+<div class="mb-3 flex items-center gap-2 bg-surface-variant border border-outline-variant px-2 py-1.5 rounded-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">info</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Replies are currently disabled on this video by the creator.</span>
+</div>
+<div class="bg-surface border border-outline-variant rounded-DEFAULT p-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<textarea class="w-full bg-transparent border-none text-body-md font-body-md text-on-surface placeholder-on-surface-variant focus:ring-0 p-0 min-h-[60px] resize-none" placeholder="Draft a reply to thread... (Will queue until comments enabled)"></textarea>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-outline-variant border-dashed">
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Insert Snippet">
+<span class="material-symbols-outlined text-sm">code_blocks</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Attach Macro">
+<span class="material-symbols-outlined text-sm">bolt</span>
+</button>
+<span class="font-label-xs text-label-xs text-on-surface-variant ml-2 font-mono">142 / 10,000</span>
+</div>
+<button class="bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container font-label-sm text-label-sm font-bold px-4 py-1.5 rounded-sm transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">send</span>
+                                Reply
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
