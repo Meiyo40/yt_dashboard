@@ -38,6 +38,7 @@ go.work
 # IDEs
 .idea/
 .vscode/
+.junie/
 *.swp
 *.swo
 
