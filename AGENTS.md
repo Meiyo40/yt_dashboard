@@ -10,7 +10,7 @@ Go + Templ + HTMX + Alpine.js dashboard that tracks replies to your own YouTube 
 | Templates | `templ` (type-safe server-side HTML) |
 | Interactivity | HTMX (partial HTML swaps) |
 | Client state | Alpine.js (dropdowns, toggles only) |
-| Styling | Tailwind CSS (CDN Play — no build step) |
+| Styling | Tailwind CSS (CDN) + **DaisyUI** (CDN, pure CSS components) |
 | DB | SQLite via `modernc.org/sqlite` (pure Go, no CGO) |
 
 ## Dev Commands
@@ -41,6 +41,9 @@ templates/
   partials/          # HTMX fragment templates
 static/              # Static assets (if any)
 ```
+
+## Work Tracking
+- See `kanban.md` for the current progress, tasks, and feature implementation phases.
 
 ## Architecture Constraints
 - **No API endpoint exists to list all comments by a user** — the app must maintain a local Comment ID Registry (SQLite) of comment IDs the user has posted, then poll `comments.list?parentId={id}` for replies.
