@@ -3,7 +3,7 @@ package pages
 import "yt_dashboard/templates"
 
 templ Index(commentsCount int, repliesCount int, quotaUsage int, isConnected bool) {
-	@templates.Layout("Dashboard", "dashboard") {
+	@templates.Layout("Dashboard", "dashboard", isConnected) {
 		<div class="space-y-8">
 			<!-- Hero / Welcome Header -->
 			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

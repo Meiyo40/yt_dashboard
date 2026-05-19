@@ -29,9 +29,12 @@ air
 go build -o ./bin/yt-dashboard .
 ```
 
-## Project Structure (expected)
+## Project Structure
 ```
 main.go              # Wiring only: routes, server config
+db/
+  db.go              # Database connection & schema migrations
+  models.go          # Data structs (Shared across packages)
 handlers/
   pages.go           # Full-page handlers (GET /)
   partials.go        # HTMX partial handlers (GET /partials/*)
@@ -39,7 +42,8 @@ templates/
   layout.templ       # Base layout (head, nav, scripts)
   pages/             # Page templates
   partials/          # HTMX fragment templates
-static/              # Static assets (if any)
+static/              # Static assets (CSS/JS, if any)
+docs/                # Project documentation and specifications
 ```
 
 ## Work Tracking
@@ -53,8 +57,8 @@ static/              # Static assets (if any)
 
 ## Conventions
 - `main.go` = wiring only (routes, server init). No business logic.
-- Handler flow: handler → data → template. No service/repository layer for this scale.
-- One handler = one file, grouped by responsibility (pages vs partials).
+- Handler flow: handler → `db` (query/exec) → template. No service/repository layer for this scale.
+- Handlers grouped by responsibility into files (e.g., `pages.go`, `partials.go`).
 - Templates mirror handler structure. No business logic in templates.
 - Stable HTML IDs for HTMX targets (e.g., `id="table-wrapper"`).
 - Alpine only for local UI state (dropdowns, tabs, modals). Never use `fetch()` in Alpine if HTMX can do it.

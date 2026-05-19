@@ -1,6 +1,6 @@
 package templates
 
-templ Layout(title string, activeTab string) {
+templ Layout(title string, activeTab string, isConnected bool) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="dim">
 		<head>
@@ -89,13 +89,24 @@ templ Layout(title string, activeTab string) {
 					<!-- OAuth Profile Preview Stub -->
 					<div x-data="{ open: false }" class="relative">
 						<button @click="open = !open" class="btn btn-ghost btn-circle avatar border border-base-200">
-							<div class="w-9 rounded-full bg-neutral text-neutral-content flex items-center justify-center font-bold">
-								U
-							</div>
+							if isConnected {
+								<div class="w-9 rounded-full bg-emerald-600 text-neutral-content flex items-center justify-center font-bold">
+									C
+								</div>
+							} else {
+								<div class="w-9 rounded-full bg-neutral text-neutral-content flex items-center justify-center font-bold">
+									U
+								</div>
+							}
 						</button>
 						<ul x-show="open" @click.outside="open = false" class="menu menu-sm absolute right-0 mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 border border-base-200" style="display: none;">
-							<li><span class="text-xs font-semibold text-base-content/50">NOT CONNECTED</span></li>
-							<li><a class="text-primary font-medium" href="/oauth2/login">Connect YouTube</a></li>
+							if isConnected {
+								<li><span class="text-xs font-semibold text-success">CONNECTED</span></li>
+								<li><a class="text-error font-medium" href="/oauth2/logout">Disconnect</a></li>
+							} else {
+								<li><span class="text-xs font-semibold text-base-content/50">NOT CONNECTED</span></li>
+								<li><a class="text-primary font-medium" href="/oauth2/login">Connect YouTube</a></li>
+							}
 						</ul>
 					</div>
 				</div>
@@ -131,16 +142,29 @@ templ Layout(title string, activeTab string) {
 					<div class="mt-auto">
 						<div class="p-4 rounded-xl bg-base-200 border border-base-300 flex flex-col gap-2">
 							<span class="text-xs font-bold uppercase tracking-wider text-base-content/40">Status</span>
-							<div class="flex items-center gap-2">
-								<span class="relative flex h-2.5 w-2.5">
-									<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-									<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-								</span>
-								<span class="text-xs text-base-content/70 font-semibold">Disconnected</span>
-							</div>
-							<a href="/oauth2/login" class="btn btn-primary btn-sm btn-block mt-1">
-								Log In YouTube
-							</a>
+							if isConnected {
+								<div class="flex items-center gap-2">
+									<span class="relative flex h-2.5 w-2.5">
+										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+										<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+									</span>
+									<span class="text-xs text-base-content/70 font-semibold">Connected</span>
+								</div>
+								<a href="/oauth2/logout" class="btn btn-outline btn-error btn-sm btn-block mt-1">
+									Disconnect
+								</a>
+							} else {
+								<div class="flex items-center gap-2">
+									<span class="relative flex h-2.5 w-2.5">
+										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+										<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+									</span>
+									<span class="text-xs text-base-content/70 font-semibold">Disconnected</span>
+								</div>
+								<a href="/oauth2/login" class="btn btn-primary btn-sm btn-block mt-1">
+									Log In YouTube
+								</a>
+							}
 						</div>
 					</div>
 				</aside>

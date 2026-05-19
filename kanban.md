@@ -7,7 +7,7 @@
 - [x] Setup `main.go` with Chi router and serve static files.
 - [x] Create base `layout.templ` with Tailwind CSS, DaisyUI, HTMX, and Alpine.js.
 - [x] Implement SQLite database initialization and schema creation (Comment Registry, Replies, OAuth Tokens).
-- [ ] Implement YouTube OAuth 2.0 authentication flow (login, callback, token storage, refresh token mechanism).
+- [x] Implement YouTube OAuth 2.0 authentication flow (login, callback, token storage, refresh token mechanism).
 
 ### Phase 2: Core Architecture (Comment ID Registry)
 - [ ] Define `OwnComment` struct and implement DB CRUD operations.

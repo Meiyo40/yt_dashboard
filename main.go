@@ -50,21 +50,10 @@ func main() {
 	// HTMX Partials
 	r.Get("/partials/feed", handlers.FeedPartialHandler)
 
-	// OAuth login/callback stubs
-	r.Get("/oauth2/login", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(`
-			<div style="font-family: sans-serif; padding: 2rem; max-width: 400px; margin: auto; text-align: center;">
-				<h2>YouTube OAuth Login Stub</h2>
-				<p>This is a placeholder for OAuth flow. Next features will wire this to Google Authentication.</p>
-				<a href="/" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #3b82f6; color: white; text-decoration: none; border-radius: 0.25rem;">Back to Dashboard</a>
-			</div>
-		`))
-	})
-
-	r.Get("/oauth2/callback", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OAuth Callback Stub"))
-	})
+	// OAuth login/callback/logout routes
+	r.Get("/oauth2/login", handlers.OAuthLoginHandler)
+	r.Get("/oauth2/callback", handlers.OAuthCallbackHandler)
+	r.Get("/oauth2/logout", handlers.OAuthLogoutHandler)
 
 	// Static files file server
 	workDir, _ := os.Getwd()
