@@ -1,0 +1,35 @@
+# Config file for Air (hot reload)
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # Command to run. Compiles templ files, then builds the Go binary.
+  cmd = "templ generate && go build -o ./tmp/main.exe ."
+  # Binary executable to run.
+  bin = "tmp/main.exe"
+  # Watch files with these extensions.
+  include_ext = ["go", "templ", "html"]
+  # Exclude these directories.
+  exclude_dir = ["tmp", "static", ".git"]
+  # Exclude templ-generated Go files from triggering builds to avoid build loops.
+  exclude_regex = ["_templ.go"]
+  # Delay in milliseconds before rebuilding after a change.
+  delay = 500
+  # Stop running the old binary if the build fails.
+  stop_on_error = true
+  # Send interrupt signal before killing (not fully supported on Windows, but safe to set)
+  send_interrupt = false
+  # Delay in milliseconds before killing the process.
+  kill_delay = 500
+
+[log]
+  time = true
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

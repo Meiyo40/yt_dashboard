@@ -1,0 +1,31 @@
+package partials
+
+import "yt_dashboard/db"
+
+templ Feed(notifications []db.NotificationItem) {
+	if len(notifications) == 0 {
+		<div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+			<div class="bg-base-200 p-4 rounded-full text-base-content/30 mb-4 border border-base-300">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a9.04 9.04 0 0 1-1.801 1.3c-1.347.74-2.993.614-4.228-.242a9.034 9.034 0 0 1-2.437-2.717 18.275 18.275 0 0 0-2.583-2.898A9.033 9.033 0 0 1 2.25 9c0-2.83 1.916-5.209 4.583-5.918a9.04 9.04 0 0 1 10.334 0C19.834 3.791 21.75 6.17 21.75 9c0 1.25-.25 2.441-.703 3.528m-7.19 5.805a9.061 9.061 0 0 1-4.708 0M18.001 19c0 .015 0 .03-.002.045a3.25 3.25 0 0 1-6.496 0 3.376 3.376 0 0 1-.002-.045m6.5 0H11.5" />
+				</svg>
+			</div>
+			<h4 class="text-lg font-bold tracking-tight text-base-content/80">All Caught Up!</h4>
+			<p class="text-sm text-base-content/50 max-w-sm mt-1">
+				There are no recent replies on your tracked comments, or you haven't added comments to track yet.
+			</p>
+			<div class="mt-6 flex flex-wrap gap-3 justify-center">
+				<a href="/comments" class="btn btn-neutral btn-sm border-base-300">
+					Track a Comment
+				</a>
+				<button hx-get="/partials/feed" hx-target="#feed-container" class="btn btn-primary btn-sm">
+					Check Again
+				</button>
+			</div>
+		</div>
+	} else {
+		<div class="space-y-4">
+			<!-- Notifications list will render here when replies are fetched -->
+		</div>
+	}
+}
