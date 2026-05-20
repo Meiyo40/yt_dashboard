@@ -6,6 +6,7 @@ import (
 
 	"yt_dashboard/db"
 	"yt_dashboard/templates/pages"
+	"yt_dashboard/youtube"
 )
 
 // IndexPageHandler handles requests to the root URL (GET /)
@@ -37,8 +38,8 @@ func IndexPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	isConnected := tokensCount > 0
 
-	// Stub quota usage (will be integrated with active tracking later)
-	quotaUsage := 0
+	// Live quota usage from in-memory counter
+	quotaUsage := youtube.QuotaCounter
 
 	// Render the page template
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

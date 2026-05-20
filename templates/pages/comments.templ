@@ -6,8 +6,8 @@ import (
 	"yt_dashboard/templates/partials"
 )
 
-templ Comments(comments []db.OwnComment, isConnected bool) {
-	@templates.Layout("Tracked Comments", "comments", isConnected, len(comments)) {
+templ Comments(comments []db.OwnComment, isConnected bool, quotaUsage int) {
+	@templates.Layout("Tracked Comments", "comments", isConnected, len(comments), quotaUsage) {
 		<div class="space-y-8">
 			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>

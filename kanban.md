@@ -2,12 +2,6 @@
 
 ## 📋 Backlog / To Do
 
-### Phase 3: Notifications Feed (Feature 1)
-- [ ] Integrate `FetchReplies` in `youtube/client.go` for `comments.list?parentId=` with pagination.
-- [ ] Implement polling logic: iterate registry, fetch replies, diff against stored, mark unseen.
-- [ ] Build actual notification cards in feed template (`feed.templ`).
-- [ ] Add HTMX polling to dashboard feed container.
-
 ### Phase 4: Reply Composer (Feature 2)
 - [ ] Implement `comments.insert` integration in `youtube/client.go`.
 - [ ] Build HTMX reply form inline within notification cards.
@@ -44,3 +38,12 @@
 - [x] Build /comments page with add form and tracked comments table.
 - [x] Build HTMX partials: CommentList (table + error), CommentAddForm, delete handler.
 - [x] Update sidebar badge to show real comment count.
+
+### Phase 3: Notifications Feed (Feature 1)
+- [x] Integrate `FetchReplies` in `youtube/client.go` for `comments.list?parentId=` with pagination.
+- [x] Implement polling logic: iterate registry, fetch replies, diff against stored, mark unseen.
+- [x] Build actual notification cards in feed template (`feed.templ`).
+- [x] Add HTMX polling to dashboard feed container.
+- [x] Add simple in-memory quota tracking (`youtube.QuotaCounter`).
+- [x] Add MarkReplySeen HTMX endpoint (`POST /partials/replies/{id}/seen`).
+- [x] Wire live quota usage into navbar and dashboard stats card.

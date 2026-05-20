@@ -3,7 +3,7 @@ package pages
 import "yt_dashboard/templates"
 
 templ Index(commentsCount int, repliesCount int, quotaUsage int, isConnected bool) {
-	@templates.Layout("Dashboard", "dashboard", isConnected, commentsCount) {
+	@templates.Layout("Dashboard", "dashboard", isConnected, commentsCount, quotaUsage) {
 		<div class="space-y-8">
 			<!-- Hero / Welcome Header -->
 			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -81,7 +81,7 @@ templ Index(commentsCount int, repliesCount int, quotaUsage int, isConnected boo
 						Recent Notifications
 					</h3>
 					<div class="flex items-center gap-2">
-						<button hx-get="/partials/feed" hx-target="#feed-container" hx-indicator="#feed-loading" class="btn btn-ghost btn-sm flex items-center gap-1.5 hover:bg-base-200">
+						<button hx-get="/partials/feed/sync" hx-target="#feed-container" hx-indicator="#feed-loading" class="btn btn-ghost btn-sm flex items-center gap-1.5 hover:bg-base-200">
 							<svg id="feed-loading" class="animate-spin h-3.5 w-3.5 text-base-content hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -92,8 +92,8 @@ templ Index(commentsCount int, repliesCount int, quotaUsage int, isConnected boo
 				</div>
 
 				<div class="p-6">
-					<!-- HTMX Feed Container -->
-					<div id="feed-container" hx-get="/partials/feed" hx-trigger="load" class="min-h-[200px]">
+					<!-- HTMX Feed Container with polling -->
+					<div id="feed-container" hx-get="/partials/feed/sync" hx-trigger="load, every 300s" class="min-h-[200px]">
 						<!-- Loader placeholder -->
 						<div class="flex flex-col items-center justify-center py-12 gap-3 text-base-content/40">
 							<span class="loading loading-spinner loading-md"></span>

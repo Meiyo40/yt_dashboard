@@ -1,31 +1,142 @@
 package partials
 
-import "yt_dashboard/db"
+import (
+	"fmt"
+	"time"
 
-templ Feed(notifications []db.NotificationItem) {
-	if len(notifications) == 0 {
-		<div class="flex flex-col items-center justify-center py-16 px-4 text-center">
-			<div class="bg-base-200 p-4 rounded-full text-base-content/30 mb-4 border border-base-300">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a9.04 9.04 0 0 1-1.801 1.3c-1.347.74-2.993.614-4.228-.242a9.034 9.034 0 0 1-2.437-2.717 18.275 18.275 0 0 0-2.583-2.898A9.033 9.033 0 0 1 2.25 9c0-2.83 1.916-5.209 4.583-5.918a9.04 9.04 0 0 1 10.334 0C19.834 3.791 21.75 6.17 21.75 9c0 1.25-.25 2.441-.703 3.528m-7.19 5.805a9.061 9.061 0 0 1-4.708 0M18.001 19c0 .015 0 .03-.002.045a3.25 3.25 0 0 1-6.496 0 3.376 3.376 0 0 1-.002-.045m6.5 0H11.5" />
-				</svg>
-			</div>
-			<h4 class="text-lg font-bold tracking-tight text-base-content/80">All Caught Up!</h4>
-			<p class="text-sm text-base-content/50 max-w-sm mt-1">
-				There are no recent replies on your tracked comments, or you haven't added comments to track yet.
-			</p>
-			<div class="mt-6 flex flex-wrap gap-3 justify-center">
-				<a href="/comments" class="btn btn-neutral btn-sm border-base-300">
-					Track a Comment
-				</a>
-				<button hx-get="/partials/feed" hx-target="#feed-container" class="btn btn-primary btn-sm">
-					Check Again
-				</button>
-			</div>
-		</div>
-	} else {
-		<div class="space-y-4">
-			<!-- Notifications list will render here when replies are fetched -->
-		</div>
+	"yt_dashboard/db"
+)
+
+// formatRelativeTime returns a human-readable relative time string.
+// For simplicity in templ, we use a basic duration-based string.
+func formatRelativeTime(t time.Time) string {
+	d := time.Since(t)
+	if d < time.Minute {
+		return "just now"
 	}
+	if d < time.Hour {
+		return fmt.Sprintf("%d min ago", int(d.Minutes()))
+	}
+	if d < 24*time.Hour {
+		return fmt.Sprintf("%d hr ago", int(d.Hours()))
+	}
+	if d < 7*24*time.Hour {
+		return fmt.Sprintf("%d days ago", int(d.Hours()/24))
+	}
+	return t.Format("Jan 2")
+}
+
+func initialLetter(s string) string {
+	if s == "" {
+		return "?"
+	}
+	runes := []rune(s)
+	return string(runes[0])
+}
+
+func replyCardClass(seen bool) string {
+	if seen {
+		return "card bg-base-100 border border-base-200 shadow-sm transition hover:shadow-md"
+	}
+	return "card bg-base-100 border-l-4 border-l-secondary border-y border-r border-base-200 shadow-sm transition hover:shadow-md bg-secondary/5"
+}
+
+templ Feed(notifications []db.NotificationItem, alert string) {
+	<div class="space-y-4">
+		if alert != "" {
+			<div class="alert alert-info text-sm py-2">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span>{ alert }</span>
+			</div>
+		}
+		if len(notifications) == 0 {
+			<div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+				<div class="bg-base-200 p-4 rounded-full text-base-content/30 mb-4 border border-base-300">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a9.04 9.04 0 0 1-1.801 1.3c-1.347.74-2.993.614-4.228-.242a9.034 9.034 0 0 1-2.437-2.717 18.275 18.275 0 0 0-2.583-2.898A9.033 9.033 0 0 1 2.25 9c0-2.83 1.916-5.209 4.583-5.918a9.04 9.04 0 0 1 10.334 0C19.834 3.791 21.75 6.17 21.75 9c0 1.25-.25 2.441-.703 3.528m-7.19 5.805a9.061 9.061 0 0 1-4.708 0M18.001 19c0 .015 0 .03-.002.045a3.25 3.25 0 0 1-6.496 0 3.376 3.376 0 0 1-.002-.045m6.5 0H11.5" />
+					</svg>
+				</div>
+				<h4 class="text-lg font-bold tracking-tight text-base-content/80">All Caught Up!</h4>
+				<p class="text-sm text-base-content/50 max-w-sm mt-1">
+					There are no recent replies on your tracked comments, or you haven't added comments to track yet.
+				</p>
+				<div class="mt-6 flex flex-wrap gap-3 justify-center">
+					<a href="/comments" class="btn btn-neutral btn-sm border-base-300">
+						Track a Comment
+					</a>
+					<button hx-get="/partials/feed/sync" hx-target="#feed-container" class="btn btn-primary btn-sm">
+						Check Again
+					</button>
+				</div>
+			</div>
+		} else {
+			<div class="space-y-3">
+				for _, item := range notifications {
+					<div class={ replyCardClass(item.Seen) }>
+						<div class="card-body p-4">
+							<div class="flex items-start gap-3">
+								<!-- Avatar -->
+								<div class="avatar shrink-0">
+									<div class="w-10 h-10 rounded-full">
+										if item.Reply.AuthorProfileImageURL != "" {
+											<img src={ item.Reply.AuthorProfileImageURL } alt={ item.Reply.AuthorDisplayName } class="w-full h-full object-cover"/>
+										} else {
+											<div class="bg-neutral text-neutral-content flex items-center justify-center w-full h-full font-bold text-sm">
+												{ initialLetter(item.Reply.AuthorDisplayName) }
+											</div>
+										}
+									</div>
+								</div>
+								<!-- Content -->
+								<div class="flex-1 min-w-0">
+									<div class="flex items-center justify-between gap-2">
+										<div class="flex items-center gap-2 min-w-0">
+											<span class="font-semibold text-sm truncate">{ item.Reply.AuthorDisplayName }</span>
+											if !item.Seen {
+												<span class="badge badge-secondary badge-xs">New</span>
+											}
+										</div>
+										<span class="text-xs text-base-content/50 shrink-0 whitespace-nowrap">{ formatRelativeTime(item.Reply.PublishedAt) }</span>
+									</div>
+									<p class="text-sm text-base-content/90 mt-1 leading-relaxed">{ item.Reply.TextDisplay }</p>
+									<!-- Parent context -->
+									<div class="mt-2 p-2 rounded-lg bg-base-200/60 border border-base-200 text-xs">
+										<div class="flex items-center gap-1.5 text-base-content/60 mb-0.5">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+											</svg>
+											<span class="truncate font-medium">{ item.OwnComment.VideoTitle }</span>
+										</div>
+										<p class="text-base-content/50 italic truncate">&ldquo;{ item.OwnComment.TextOriginal }&rdquo;</p>
+									</div>
+									<!-- Actions -->
+									<div class="flex items-center gap-2 mt-2">
+										if !item.Seen {
+											<button
+												hx-post={ fmt.Sprintf("/partials/replies/%s/seen", item.Reply.ID) }
+												hx-target="closest .card"
+												hx-swap="outerHTML"
+												class="btn btn-ghost btn-xs text-base-content/50 hover:text-secondary"
+											>
+												Mark as read
+											</button>
+										}
+										<a
+											href={ templ.SafeURL(fmt.Sprintf("https://www.youtube.com/watch?v=%s&lc=%s", item.OwnComment.VideoID, item.OwnComment.CommentID)) }
+											target="_blank"
+											class="btn btn-ghost btn-xs text-base-content/50 hover:text-primary"
+										>
+											View on YouTube
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		}
+	</div>
 }

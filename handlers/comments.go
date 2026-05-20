@@ -32,7 +32,7 @@ func CommentsPageHandler(w http.ResponseWriter, r *http.Request) {
 	isConnected := tokensCount > 0
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = pages.Comments(comments, isConnected).Render(ctx, w)
+	err = pages.Comments(comments, isConnected, youtube.QuotaCounter).Render(ctx, w)
 	if err != nil {
 		log.Printf("Error rendering comments template: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

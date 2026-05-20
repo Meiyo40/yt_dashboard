@@ -52,6 +52,8 @@ func main() {
 
 	// HTMX Partials
 	r.Get("/partials/feed", handlers.FeedPartialHandler)
+	r.Get("/partials/feed/sync", handlers.FeedSyncHandler)
+	r.Post("/partials/replies/{id}/seen", handlers.MarkReplySeenHandler)
 	r.Post("/partials/comments/add", handlers.CommentsAddHandler)
 	r.Delete("/partials/comments/{id}", handlers.CommentsDeleteHandler)
 
