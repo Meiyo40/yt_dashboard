@@ -47,8 +47,13 @@ func main() {
 	// Web routes
 	r.Get("/", handlers.IndexPageHandler)
 
+	// Comment registry
+	r.Get("/comments", handlers.CommentsPageHandler)
+
 	// HTMX Partials
 	r.Get("/partials/feed", handlers.FeedPartialHandler)
+	r.Post("/partials/comments/add", handlers.CommentsAddHandler)
+	r.Delete("/partials/comments/{id}", handlers.CommentsDeleteHandler)
 
 	// OAuth login/callback/logout routes
 	r.Get("/oauth2/login", handlers.OAuthLoginHandler)

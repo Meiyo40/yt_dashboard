@@ -1,0 +1,54 @@
+package pages
+
+import (
+	"yt_dashboard/db"
+	"yt_dashboard/templates"
+	"yt_dashboard/templates/partials"
+)
+
+templ Comments(comments []db.OwnComment, isConnected bool) {
+	@templates.Layout("Tracked Comments", "comments", isConnected, len(comments)) {
+		<div class="space-y-8">
+			<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+				<div>
+					<h2 class="text-3xl font-extrabold tracking-tight">Tracked Comments</h2>
+					<p class="text-base-content/60 mt-1">Manage the comments you're tracking for replies.</p>
+				</div>
+			</div>
+
+			<div class="card bg-base-100 border border-base-200 shadow-xl overflow-hidden">
+				<div class="px-6 py-5 border-b border-base-200">
+					<h3 class="font-bold text-lg flex items-center gap-2">
+						<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+						Add Comment to Registry
+					</h3>
+				</div>
+				<div class="p-6">
+					if !isConnected {
+						<div class="alert alert-warning mb-0">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+							</svg>
+							<span>Connect your YouTube account first to add and track comments.</span>
+						</div>
+					} else {
+						@partials.CommentAddForm()
+					}
+				</div>
+			</div>
+
+			<div class="card bg-base-100 border border-base-200 shadow-xl overflow-hidden">
+				<div class="px-6 py-5 border-b border-base-200 flex items-center justify-between">
+					<h3 class="font-bold text-lg flex items-center gap-2">
+						<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+						Comment Registry
+					</h3>
+					<span class="text-xs text-base-content/50">{ templ.JSONString(len(comments)) } tracked</span>
+				</div>
+				<div class="p-6">
+					@partials.CommentList(comments, isConnected, "")
+				</div>
+			</div>
+		</div>
+	}
+}

@@ -2,32 +2,20 @@
 
 ## 📋 Backlog / To Do
 
-### Phase 1: Setup & Infrastructure
-- [x] Initialize Go project (`go mod init`) and install dependencies (`chi`, `templ`, `air`, `modernc.org/sqlite`).
-- [x] Setup `main.go` with Chi router and serve static files.
-- [x] Create base `layout.templ` with Tailwind CSS, DaisyUI, HTMX, and Alpine.js.
-- [x] Implement SQLite database initialization and schema creation (Comment Registry, Replies, OAuth Tokens).
-- [x] Implement YouTube OAuth 2.0 authentication flow (login, callback, token storage, refresh token mechanism).
-
-### Phase 2: Core Architecture (Comment ID Registry)
-- [ ] Define `OwnComment` struct and implement DB CRUD operations.
-- [ ] Define `Reply` struct and implement DB CRUD operations.
-- [ ] Build UI to manually add a tracked comment to the registry (e.g., paste a YouTube comment URL).
-
 ### Phase 3: Notifications Feed (Feature 1)
-- [ ] Implement YouTube API integration for `comments.list` to fetch replies for a given `parentId`.
-- [ ] Implement background polling strategy (iterate registry, fetch new replies, update `lastCheckedAt`).
-- [ ] Implement diffing logic to mark new replies as "unseen" and update `replyCount`.
-- [ ] Build Dashboard UI (HTMX feed) to display `NotificationItem` (reply + original comment context).
+- [ ] Integrate `FetchReplies` in `youtube/client.go` for `comments.list?parentId=` with pagination.
+- [ ] Implement polling logic: iterate registry, fetch replies, diff against stored, mark unseen.
+- [ ] Build actual notification cards in feed template (`feed.templ`).
+- [ ] Add HTMX polling to dashboard feed container.
 
 ### Phase 4: Reply Composer (Feature 2)
-- [ ] Implement YouTube API integration for `comments.insert` to post a reply.
-- [ ] Build HTMX form inline within the Notification feed to compose a reply.
-- [ ] Implement error handling for reply submission (403 forbidden, quota exceeded, 400 bad request).
-- [ ] Update local database immediately upon successful reply insertion.
+- [ ] Implement `comments.insert` integration in `youtube/client.go`.
+- [ ] Build HTMX reply form inline within notification cards.
+- [ ] Implement error handling (403, quota exceeded, 400).
+- [ ] Update DB immediately on successful reply.
 
 ### Phase 5: Full Thread Viewer (Feature 3 - Optional)
-- [ ] Implement YouTube API integration for `commentThreads.list` and `channels.list` (to get own channel ID).
+- [ ] Implement YouTube API integration for `commentThreads.list` and `channels.list`.
 - [ ] Build UI to inspect the full video thread context from a reply notification.
 - [ ] Implement logic to highlight the user's own comment thread in the viewer.
 
@@ -41,4 +29,18 @@
 
 ## ✅ Done
 
-- [x] Project specifications and architecture defined.
+### Phase 1: Setup & Infrastructure
+- [x] Initialize Go project, install dependencies (chi, templ, air, modernc.org/sqlite).
+- [x] Setup main.go with Chi router and static file server.
+- [x] Create base layout.templ with Tailwind CSS, DaisyUI, HTMX, and Alpine.js.
+- [x] Implement SQLite schema (own_comments, replies, oauth_tokens).
+- [x] Implement YouTube OAuth 2.0 auth flow (login, callback, token storage, refresh).
+
+### Phase 2: Core Architecture (Comment ID Registry)
+- [x] Define data structs (OwnComment, Reply, NotificationItem, OAuthToken).
+- [x] Implement DB CRUD: SaveComment, GetComments, GetComment, DeleteComment, UpdateCheckedAt.
+- [x] Implement DB CRUD: SaveReplies (batch), MarkReplySeen, GetUnseenReplyCount.
+- [x] Build YouTube API client: FetchCommentSnippet, FetchVideoSnippet, ParseCommentURL.
+- [x] Build /comments page with add form and tracked comments table.
+- [x] Build HTMX partials: CommentList (table + error), CommentAddForm, delete handler.
+- [x] Update sidebar badge to show real comment count.

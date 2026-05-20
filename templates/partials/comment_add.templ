@@ -1,0 +1,19 @@
+package partials
+
+templ CommentAddForm() {
+	<form hx-post="/partials/comments/add"
+		hx-target="#comment-list"
+		hx-swap="outerHTML"
+		hx-indicator="#add-loading"
+		class="flex gap-3">
+		<div class="flex-1 join">
+			<input type="url" name="url" placeholder="Paste a YouTube comment URL (e.g. https://www.youtube.com/watch?v=...&lc=...)"
+				required
+				class="input input-bordered join-item w-full text-sm focus:outline-primary"/>
+			<button type="submit" class="btn btn-primary join-item flex items-center gap-2">
+				<span id="add-loading" class="loading loading-spinner loading-xs hidden htmx-indicator"></span>
+				Add to Registry
+			</button>
+		</div>
+	</form>
+}
